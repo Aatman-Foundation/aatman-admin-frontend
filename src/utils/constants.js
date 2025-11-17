@@ -1,0 +1,12 @@
+export const USER_STATUSES = ['PENDING', 'UNDER_REVIEW', 'VERIFIED', 'REJECTED'];
+export const DOC_STATUSES = ['UNVERIFIED', 'VERIFIED', 'REJECTED'];
+export const DOC_TYPES = [
+  'PHOTO',
+  'ID_PROOF',
+  'ADDRESS_PROOF',
+  'UG_DEGREE',
+  'PG_DEGREE',
+  'PHD_CERT',
+  'COUNCIL_REG',
+  'OTHER'
+];
