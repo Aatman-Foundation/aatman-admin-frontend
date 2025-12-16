@@ -26,7 +26,9 @@ import {
 } from '@chakra-ui/react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
+  FiBell,
   FiFileText,
+  FiImage,
   FiHome,
   FiMenu,
   FiMoon,
@@ -42,6 +44,8 @@ const navItems = [
   { label: 'Dashboard', icon: FiHome, to: '/app' },
   { label: 'Users', icon: FiUsers, to: '/app/users' },
   { label: 'Documents', icon: FiFileText, to: '/app/documents' },
+  { label: 'Announcements', icon: FiBell, to: '/app/announcements' },
+  { label: 'Gallery', icon: FiImage, to: '/app/gallery' },
   { label: 'Settings', icon: FiSettings, to: '/app/settings' }
 ];
 

@@ -7,7 +7,7 @@ const USER_STATS_ENDPOINT = '/api/v1/admin/get-user-stats';
 const USERS_ENDPOINT = '/api/v1/admin/get-all-users';
 const DEFAULT_STATUS_COUNTS = { PENDING: 0, UNDER_REVIEW: 0, VERIFIED: 0, REJECTED: 0 };
 
-const generateId = () => {
+const generateId = (prefix = 'user') => {
   try {
     const cryptoRef = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
     if (cryptoRef && typeof cryptoRef.randomUUID === 'function') {
@@ -16,7 +16,7 @@ const generateId = () => {
   } catch {
     // ignore and fall back to manual id generation
   }
-  return `user-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 };
 
 const cloneUser = (user) => ({
@@ -42,6 +42,49 @@ const cloneUser = (user) => ({
 });
 
 let users = seedUsers.map((user) => cloneUser(user));
+const announcementSeeds = [
+  {
+    id: 'announcement-1',
+    title: 'Scheduled maintenance tonight',
+    message: 'Verification console will undergo maintenance from 11 PM to 12 AM. Submissions remain safe.',
+    status: 'SCHEDULED',
+    audience: 'All admins',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    scheduledFor: new Date(Date.now() + 3600000 * 5).toISOString()
+  },
+  {
+    id: 'announcement-2',
+    title: 'New verification checklist',
+    message: 'Updated checklist for AYUSH practitioner documents is now available in the knowledge base.',
+    status: 'PUBLISHED',
+    audience: 'Verification team',
+    createdAt: new Date(Date.now() - 86400000 * 6).toISOString()
+  }
+];
+
+const gallerySeeds = [
+  {
+    id: 'gallery-1',
+    title: 'Community wellness camp',
+    description: 'Aatman volunteers conducting free check-ups and awareness sessions.',
+    category: 'Events',
+    imageUrl:
+      'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=900&q=80',
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+  },
+  {
+    id: 'gallery-2',
+    title: 'Training workshop',
+    description: 'New verifiers learning the latest onboarding SOPs.',
+    category: 'Training',
+    imageUrl:
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=900&q=80',
+    createdAt: new Date(Date.now() - 86400000 * 8).toISOString()
+  }
+];
+
+let announcements = [...announcementSeeds];
+let galleryItems = [...gallerySeeds];
 
 const buildDocumentIndex = () =>
   users.flatMap((user) =>
@@ -450,6 +493,137 @@ export const bulkUpdateUsers = async ({ ids, status, actor = 'superadmin' }) => 
   return updated;
 };
 
+export const listAnnouncements = async () => {
+  await delay(160);
+  return announcements
+    .slice()
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+};
+
+export const createAnnouncement = async ({
+  title,
+  message,
+  audience,
+  link,
+  scheduledFor
+} = {}) => {
+  if (!title?.trim() || !message?.trim()) {
+    throw new Error('Title and message are required to create an announcement');
+  }
+  await delay(200);
+  const createdAt = new Date().toISOString();
+  const formattedSchedule = scheduledFor ? new Date(scheduledFor).toISOString() : null;
+  const newAnnouncement = {
+    id: generateId('announcement'),
+    title: title.trim(),
+    message: message.trim(),
+    audience: audience?.trim() || 'All admins',
+    link: link?.trim() || '',
+    status: formattedSchedule ? 'SCHEDULED' : 'PUBLISHED',
+    scheduledFor: formattedSchedule,
+    createdAt
+  };
+  announcements = [newAnnouncement, ...announcements];
+  return newAnnouncement;
+};
+
+export const updateAnnouncement = async (id, updates = {}) => {
+  if (!id) {
+    throw new Error('Announcement id is required');
+  }
+  await delay(160);
+  const index = announcements.findIndex((item) => item.id === id);
+  if (index === -1) {
+    throw new Error('Announcement not found');
+  }
+  const nextAnnouncement = {
+    ...announcements[index],
+    ...updates,
+    title: updates.title?.trim() || announcements[index].title,
+    message: updates.message?.trim() || announcements[index].message,
+    audience: updates.audience?.trim() || announcements[index].audience,
+    link: updates.link?.trim() || announcements[index].link,
+    scheduledFor: updates.scheduledFor ? new Date(updates.scheduledFor).toISOString() : null,
+    status: updates.scheduledFor ? 'SCHEDULED' : 'PUBLISHED',
+    updatedAt: new Date().toISOString()
+  };
+  announcements[index] = nextAnnouncement;
+  return nextAnnouncement;
+};
+
+export const deleteAnnouncement = async (id) => {
+  if (!id) {
+    throw new Error('Announcement id is required');
+  }
+  await delay(120);
+  const next = announcements.filter((item) => item.id !== id);
+  if (next.length === announcements.length) {
+    throw new Error('Announcement not found');
+  }
+  announcements = next;
+  return { success: true };
+};
+
+export const listGalleryItems = async () => {
+  await delay(140);
+  return galleryItems
+    .slice()
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+};
+
+export const addGalleryItem = async ({ title, imageUrl, description, category } = {}) => {
+  if (!title?.trim() || !imageUrl?.trim()) {
+    throw new Error('Title and image URL are required to add a gallery item');
+  }
+  await delay(200);
+  const newItem = {
+    id: generateId('gallery'),
+    title: title.trim(),
+    description: description?.trim() || '',
+    category: category?.trim() || 'General',
+    imageUrl: imageUrl.trim(),
+    createdAt: new Date().toISOString()
+  };
+  galleryItems = [newItem, ...galleryItems];
+  return newItem;
+};
+
+export const updateGalleryItem = async ({ id, title, imageUrl, description, category } = {}) => {
+  if (!id) {
+    throw new Error('Gallery item id is required');
+  }
+  await delay(160);
+  const index = galleryItems.findIndex((item) => item.id === id);
+  if (index === -1) {
+    throw new Error('Gallery item not found');
+  }
+  const nextItem = {
+    ...galleryItems[index],
+    title: title?.trim() || galleryItems[index].title,
+    imageUrl: imageUrl?.trim() || galleryItems[index].imageUrl,
+    description: description?.trim() ?? galleryItems[index].description,
+    category: category?.trim() || galleryItems[index].category,
+    updatedAt: new Date().toISOString()
+  };
+  galleryItems[index] = nextItem;
+  return nextItem;
+};
+
+export const deleteGalleryItem = async (id) => {
+  if (!id) {
+    throw new Error('Gallery item id is required');
+  }
+  await delay(120);
+  const next = galleryItems.filter((item) => item.id !== id);
+  if (next.length === galleryItems.length) {
+    throw new Error('Gallery item not found');
+  }
+  galleryItems = next;
+  return { success: true };
+};
+
 export const resetStore = () => {
   users = seedUsers.map((user) => cloneUser(user));
+  announcements = [...announcementSeeds];
+  galleryItems = [...gallerySeeds];
 };

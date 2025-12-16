@@ -2,7 +2,7 @@ import apiClient from './client.js';
 
 const ADMIN_LOGIN_ENDPOINT = '/api/v1/admin/admin-login';
 const ADMIN_LOGOUT_ENDPOINT = '/api/v1/admin/admin-logout';
-const ADMIN_REGISTER_ENDPOINT = '/api/v1/admin/admin-register';
+const ADMIN_REGISTER_ENDPOINT = '/api/v1/admin/register-admin';
 
 const parseAdminLoginResponse = (payload = {}) => {
   const admin = payload.admin ?? payload.user ?? payload.profile ?? {};

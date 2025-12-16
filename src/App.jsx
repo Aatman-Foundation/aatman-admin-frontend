@@ -9,6 +9,8 @@ import UserDetailPage from './pages/UserDetailPage.jsx';
 import DocumentsPage from './pages/DocumentsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
+import AnnouncementsPage from './pages/AnnouncementsPage.jsx';
+import GalleryPage from './pages/GalleryPage.jsx';
 
 const App = () => (
   <Routes>
@@ -41,6 +43,8 @@ const App = () => (
       <Route path="users" element={<UsersPage />} />
       <Route path="users/:id" element={<UserDetailPage />} />
       <Route path="documents" element={<DocumentsPage />} />
+      <Route path="announcements" element={<AnnouncementsPage />} />
+      <Route path="gallery" element={<GalleryPage />} />
       <Route path="settings" element={<SettingsPage />} />
     </Route>
     <Route path="*" element={<Navigate to="/app" replace />} />
